@@ -38,6 +38,13 @@ BO_ 186 Control_Message: 8 Vector__XXX
    SG_ NegativeContactor : 16|1@1+ (1,0) [0|0] "" Vector__XXX
    SG_ PositiveContactor : 14|1@1+ (1,0) [0|0] "" Vector__XXX
 
+BO_ 419352584 Feedback_8: 7 Vector__XXX
+
+BO_ 469752345 Feedback_1: 2 Vector__XXX
+
+BO_ 187 Feedback: 8 Vector__XXX
+   SG_ VoltageOut : 36|12@1+ (0.5,0) [0|0] "Volts" Vector__XXX
+
 BA_DEF_ BO_ "GenMsgBackgroundColor" STRING ;
 BA_DEF_ BO_ "GenMsgForegroundColor" STRING ;
 BA_DEF_ BO_ "isj1939dbc" INT 0 0;

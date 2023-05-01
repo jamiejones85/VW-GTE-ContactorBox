@@ -13,6 +13,13 @@ byte vag_cnt0ba = 0x0;
 bool preCharge = false;
 bool mainPositiveContactor = false;
 bool mainNegativeContactor = false;
+bool isoTest = false;
+float batteryVoltage = 0;
+float outputVoltage = 0;
+float current = 0;
+int isolationErrorCount = 0;
+
+CANMessage frame;
 
 //last byte doesn't seem important, can swap to just a count
 //unsigned char messages [16][8] = {
@@ -66,7 +73,20 @@ void setup() {
   printMenu();
 }
 
+void printOutput() {
+  Serial.print("Battery: ");
+  Serial.print(batteryVoltage);
+  Serial.print("V Output: ");
+  Serial.print(outputVoltage);
+  Serial.print("V Current: ");
+  Serial.print(current);
+  Serial.print("A ISO Errors: ");
+  Serial.println(isolationErrorCount);
+
+}
+
 void ms1000Callback() {
+  
   CANMessage msg;
   msg.id  = 0x1BFFDA19;
   msg.len = 2;
@@ -75,6 +95,8 @@ void ms1000Callback() {
   msg.data[1] = 0x00;
 
   ACAN_ESP32::can.tryToSend(msg);    //send on pt can
+
+  printOutput();
 }
 
 void ms10Callback() {
@@ -90,7 +112,7 @@ void ms10Callback() {
   msg.data[4] = 0x00;
   msg.data[5] = 0x00;
   msg.data[6] = 0x00;
-  msg.data[7] = 0xA6;
+  msg.data[7] = 0x26;
 //
 //  msg.data[0] = messages[count][0];
 //  msg.data[1] = messages[count][1];
@@ -112,6 +134,10 @@ void ms10Callback() {
 
   if (mainPositiveContactor == 1) {
      msg.data[1] =  msg.data[1] | 0x40;
+  }
+
+  if (isoTest == 1) {
+     msg.data[7] =  msg.data[7] | 0x80;
   }
   
   vw_crc_calc(msg);
@@ -136,18 +162,44 @@ void loop() {
   // put your main code here, to run repeatedly:
   ts.execute();
 
+  //can read
+  while (ACAN_ESP32::can.receive (frame)) {
+    if (frame.id == 0x0BB) {
+      batteryVoltage = (frame.data[3] + ((frame.data[4] & 0x0F) << 8)) * 0.21;
+      outputVoltage = ((frame.data[5] << 4)+((frame.data[4] & 0xF0) >> 4)) * 0.5;
+      
+      current = ((frame.data[2] & 0x0F) << 4  +  (frame.data[1])) * 0.0065;
+      int isoValue = frame.data[2] >> 4;
+      if (isoValue < 15) {
+        isolationErrorCount++;
+      }
+    }
+  }
+  
   if (Serial.available()) {
     char inByte = Serial.read();
     switch (inByte)
     {
         case 'p':
           preCharge = !preCharge;
+          Serial.print("Precharge: ");
+          Serial.print(preCharge);
           break;
         case 'm':
           mainPositiveContactor = !mainPositiveContactor;
+          Serial.print("Positive Contactor: ");
+          Serial.println(mainPositiveContactor);
           break;
         case 'n':
           mainNegativeContactor = !mainNegativeContactor;
+          Serial.print("Negative Contactor: ");
+          Serial.println(mainNegativeContactor);
+
+          break;
+        case 'i':
+          isoTest = !isoTest;
+          Serial.print("Isolation Test: ");
+          Serial.println(isoTest);
           break;
     }
   }

@@ -17,7 +17,9 @@ bool isoTest = false;
 float batteryVoltage = 0;
 float outputVoltage = 0;
 float current = 0;
-int isolationErrorCount = 0;
+bool isolationFault = false;
+
+byte isolationThreashold = 7D;//? Picked just under half?
 
 CANMessage frame;
 
@@ -45,6 +47,7 @@ void printMenu() {
   Serial.println("p - toggle the precharge relay");
   Serial.println("n - toggle the negative contactor");
   Serial.println("m - toggle the positive contactor");
+  Serial.println("i - start isolation test");
 
 }
 
@@ -80,8 +83,8 @@ void printOutput() {
   Serial.print(outputVoltage);
   Serial.print("V Current: ");
   Serial.print(current);
-  Serial.print("A ISO Errors: ");
-  Serial.println(isolationErrorCount);
+  Serial.print("A Isolation Fault: ");
+  Serial.println(isolationFault);
 
 }
 
@@ -167,12 +170,13 @@ void loop() {
     if (frame.id == 0x0BB) {
       batteryVoltage = (frame.data[3] + ((frame.data[4] & 0x0F) << 8)) * 0.21;
       outputVoltage = ((frame.data[5] << 4)+((frame.data[4] & 0xF0) >> 4)) * 0.5;
-      
       current = ((frame.data[2] & 0x0F) << 4  +  (frame.data[1])) * 0.0065;
-      int isoValue = frame.data[2] >> 4;
-      if (isoValue < 15) {
-        isolationErrorCount++;
-      }
+    } else if (frame.id == 0x16A9540C) {
+      //isolation test result
+      isoTest = false;
+      isolationFault = frame.data[3] < isolationThreashold || frame.data[2] < isolationThreashold; //
+      Serial.print("Iso Test Result: ");
+      Serial.println(frame.data[3], HEX);
     }
   }
   
@@ -197,7 +201,7 @@ void loop() {
 
           break;
         case 'i':
-          isoTest = !isoTest;
+          isoTest = true;
           Serial.print("Isolation Test: ");
           Serial.println(isoTest);
           break;

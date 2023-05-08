@@ -37,6 +37,7 @@ BO_ 186 Control_Message: 8 Vector__XXX
    SG_ PreCharge : 12|1@1+ (1,0) [0|0] "" Vector__XXX
    SG_ NegativeContactor : 16|1@1+ (1,0) [0|0] "" Vector__XXX
    SG_ PositiveContactor : 14|1@1+ (1,0) [0|0] "" Vector__XXX
+   SG_ EanbleIsoTest : 63|1@1+ (1,0) [0|0] "" Vector__XXX
 
 BO_ 419352584 Feedback_8: 7 Vector__XXX
 
@@ -44,6 +45,20 @@ BO_ 469752345 Feedback_1: 2 Vector__XXX
 
 BO_ 187 Feedback: 8 Vector__XXX
    SG_ VoltageOut : 36|12@1+ (0.5,0) [0|0] "Volts" Vector__XXX
+   SG_ BattVolts : 24|12@1+ (0.21,0) [0|1] "Volts" Vector__XXX
+   SG_ Current : 8|12@1- (0.0065,0) [0|1] "Amps" Vector__XXX
+
+BO_ 347 Flags: 0 Vector__XXX
+   SG_ IsolationTest : 24|1@1+ (1,0) [0|0] "" Vector__XXX
+
+BO_ 151 HybridCan: 0 Vector__XXX
+   SG_ IsoMeasureActive : 40|1@1+ (1,0) [0|0] "" Vector__XXX
+   SG_ Error_isolation : 56|1@1+ (1,0) [0|0] "" Vector__XXX
+
+BO_ 380195852 IsolationTestResult: 8 Vector__XXX
+   SG_ NegIsolationResult : 24|8@1+ (1,0) [0|0] "" Vector__XXX
+   SG_ Counter : 8|4@1+ (1,0) [0|0] "" Vector__XXX
+   SG_ PosIsolationResult : 16|8@1+ (1,0) [0|0] "" Vector__XXX
 
 BA_DEF_ BO_ "GenMsgBackgroundColor" STRING ;
 BA_DEF_ BO_ "GenMsgForegroundColor" STRING ;
@@ -51,6 +66,11 @@ BA_DEF_ BO_ "isj1939dbc" INT 0 0;
 BA_DEF_DEF_ "GenMsgBackgroundColor" "#ffffff";
 BA_DEF_DEF_ "GenMsgForegroundColor" "#000000";
 BA_DEF_DEF_ "isj1939dbc" 0;
+CM_ SG_ 380195852 NegIsolationResult "Not_sure_what_it_means_yet,_0xFA_is_without_short_and_0x00_is_with";
 VAL_ 186 PreCharge 0 "Off" 1 "On";
 VAL_ 186 NegativeContactor 0 "Off" 1 "On";
 VAL_ 186 PositiveContactor 0 "Off" 1 "On";
+VAL_ 186 EanbleIsoTest 0 "Disable" 1 "Enable";
+VAL_ 347 IsolationTest 1 "Measuring" 0 "Not_Measuring";
+VAL_ 151 IsoMeasureActive 1 "InsulationTest";
+VAL_ 151 Error_isolation 1 "Err_Insulation";
